@@ -1,35 +1,35 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, SafeAreaView } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
 
 const App = () => {
-    const [todoList, setTodoList] = useState([]);
+    const [todos, setTodos] = useState([]);
     const [inputValue, setInputValue] = useState('');
 
     const addTodo = () => {
-        setTodoList([...todoList, {text: inputValue}]);
+        const newTodo = { text: inputValue, completed: false};
+        setTodos([...todos, newTodo]);
         setInputValue('');
     };
 
-    const completeTodo = index => {
-        const newTodoList = [...todoList];
-        newTodoList[index] = {
-            ...newTodoList[index],
-            completed: true,
-        };
-        setTodoList(newTodoList);
-    }
-
-    const deleteTodo = index => {
-        const newTodoList = [...todoList];
-        newTodoList.splice(index, 1);
-        setTodoList(newTodoList);
+    const toggleCompleted = (index) => {
+        const newTodos = [...todos];
+        newTodos[index].completed = !newTodos[index].completed;
+        setTodos(newTodos);
     };
 
-    const renderItem = ({ item }) => {
-        const containerStyle = item.completed ? styles.completedItemContainer : styles.itemContainer;
+    const deleteTodo = index => {
+        const newtodos = [...todos];
+        newtodos.splice(index, 1);
+        setTodos(newTodos);
+    };
+
+    const renderItem = ({ item, index }) => {
+        const buttonTitle = item.completed ? 'Incomplete' : 'Complete';
         return (
-            <View style={containerStyle}>
+            <View style={styles.itemContainer}>
                 <Text style={styles.itemText}>{item.text}</Text>
+                <Button title={buttonTitle} onPress={() => toggleCompleted(index)} />
             </View>
         );
     };
@@ -37,28 +37,25 @@ const App = () => {
 
     return (
         <SafeAreaView>
-            <View>
+            <View style={styles.container}>
                 <TextInput
+                    style={styles.input}
                     value={inputValue}
                     onChangeText={setInputValue}
-                    placeholder="Add a todo"
+                    placeHolder="Add todo"
                 />
                 <Button title="Add" onPress={addTodo} />
-                {todoList.map((todo, index) => (
-                    <View key={index} style={todo.completed ? styles.completed : styles.incomplete}>
-                        <Text style={styles.text}>{todo.text}</Text>
-                        <View style={{flexDirection: 'row'}}>
-                            <Button title='Complete' onPress={() => completeTodo(index)} />
-                            <Button title='Delete' onPress={() => deleteTodo(index)} />
-                        </View>
-                    </View>
-                ))}
+                <FlatList
+                    data={todos}
+                    renderItem={renderItem}
+                    keyExtractor={(item, index) => index.toString()}
+                />
             </View>
         </SafeAreaView>
     );
 };
 
-const styles = {
+const styles = StyleSheet.create({
     container: {
         backgroundColor: 'white',
         borderRadius: 10,
@@ -113,10 +110,19 @@ const styles = {
     text: {
         fontSize: 20,
     },
+    itemContainer: {
+        backgroundColor: '#f2f2f2',
+        padding: 10,
+        marginVertical: 5,
+        borderRadius: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
     content: {
         // Add any additional styling for the content inside the container here
     },
-};
+});
 
 
 export default App;
